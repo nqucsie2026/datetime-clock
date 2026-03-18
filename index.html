@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>即時時鐘</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --accent: #00f0ff;
+            --accent-glow: rgba(0, 240, 255, 0.4);
+            --secondary: #ff00aa;
+            --text: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Noto Sans TC', sans-serif;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 240, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(255, 0, 170, 0.06) 0%, transparent 50%),
+                linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .date {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--accent);
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px var(--accent-glow);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px var(--accent-glow); }
+            to { text-shadow: 0 0 30px var(--accent-glow), 0 0 50px var(--accent-glow); }
+        }
+
+        .time {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(4rem, 15vw, 10rem);
+            font-weight: 900;
+            color: var(--text);
+            letter-spacing: 0.05em;
+            line-height: 1;
+            position: relative;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.01); }
+        }
+
+        .time::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            border-radius: 2px;
+        }
+
+        .seconds {
+            color: var(--secondary);
+            text-shadow: 0 0 30px rgba(255, 0, 170, 0.6);
+        }
+
+        .weekday {
+            margin-top: 2rem;
+            font-size: clamp(1.2rem, 4vw, 2rem);
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: 300;
+            letter-spacing: 0.5em;
+        }
+
+        .lunar-date {
+            margin-top: 1rem;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 300;
+        }
+
+        .greeting {
+            margin-top: 3rem;
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--accent);
+            opacity: 0.8;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 0.5s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 1s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 1.5s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 2s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 0.3s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 0.8s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1.3s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 1.8s; }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="date" id="date"></div>
+        <div class="time">
+            <span id="hours">00</span>:<span id="minutes">00</span>:<span class="seconds" id="seconds">00</span>
+        </div>
+        <div class="weekday" id="weekday"></div>
+        <div class="lunar-date" id="lunar"></div>
+        <div class="greeting" id="greeting"></div>
+    </div>
+
+    <script>
+        const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+        const lunarMonths = ['正', '二', '三', '四', '五', '六', '七', '八', '九', '十', '冬', '臘'];
+        const lunarDays = ['初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
+                         '十一', '十二', '十三', '十四', '十五', '十六', '十七', '十八', '十九', '二十',
+                         '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十'];
+
+        function getLunarDate(date) {
+            const lunarInfo = [
+                0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
+                0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977,
+                0x04970, 0x0a4b0, 0x0b4b5, 0x06a50, 0x06d40, 0x1ab54, 0x02b60, 0x09570, 0x052f2, 0x04970,
+                0x06566, 0x0d4a0, 0x0ea50, 0x06e95, 0x05ad0, 0x02b60, 0x186e3, 0x092e0, 0x1c8d7, 0x0c950,
+                0x0d4a0, 0x1d8a6, 0x0b550, 0x056a0, 0x1a5b4, 0x025d0, 0x092d0, 0x0d2b2, 0x0a950, 0x0b557,
+                0x06ca0, 0x0b550, 0x15355, 0x04da0, 0x0a5b0, 0x14573, 0x052b0, 0x0a9a8, 0x0e950, 0x06aa0,
+                0x0aea6, 0x0ab50, 0x04b60, 0x0aae4, 0x0a570, 0x05260, 0x0f263, 0x0d950, 0x05b57, 0x056a0,
+                0x096d0, 0x04dd5, 0x04ad0, 0x0a4d0, 0x0d4d4, 0x0d250, 0x0d558, 0x0b540, 0x0b6a0, 0x195a6,
+                0x095b0, 0x049b0, 0x0a974, 0x0a4b0, 0x0b27a, 0x06a50, 0x06d40, 0x0af46, 0x0ab60, 0x09570,
+                0x04af5, 0x04970, 0x064b0, 0x074a3, 0x0ea50, 0x06b58, 0x05ac0, 0x0ab60, 0x096d5, 0x092e0,
+                0x0c960, 0x0d954, 0x0d4a0, 0x0da50, 0x07552, 0x056a0, 0x0abb7, 0x025d0, 0x092d0, 0x0cab5,
+                0x0a950, 0x0b4a0, 0x0baa4, 0x0ad50, 0x055d9, 0x04ba0, 0x0a5b0, 0x15176, 0x052b0, 0x0a930,
+                0x07954, 0x06aa0, 0x0ad50, 0x05b52, 0x04b60, 0x0a6e6, 0x0a4e0, 0x0d260, 0x0ea65, 0x0d530,
+                0x05aa0, 0x076a3, 0x096d0, 0x04afb, 0x04ad0, 0x0a4d0, 0x1d0b6, 0x0d250, 0x0d520, 0x0dd45,
+                0x0b5a0, 0x056d0, 0x055b2, 0x049b0, 0x0a577, 0x0a4b0, 0x0aa50, 0x1b255, 0x06d20, 0x0ada0,
+                0x14b63, 0x09370, 0x049f8, 0x04970, 0x064b0, 0x168a6, 0x0ea50, 0x06b20, 0x1a6c4, 0x0aae0,
+                0x0a2e0, 0x0d2e3, 0x0c960, 0x0d557, 0x0d4a0, 0x0da50, 0x05d55, 0x056a0, 0x0a6d0, 0x055d4,
+                0x052d0, 0x0a9b8, 0x0a950, 0x0b4a0, 0x0b6a6, 0x0ad50, 0x055a0, 0x0aba4, 0x0a5b0, 0x052b0,
+                0x0b273, 0x06930, 0x07337, 0x06aa0, 0x0ad50, 0x14b55, 0x04b60, 0x0a570, 0x054e4, 0x0d160,
+                0x0e968, 0x0d520, 0x0daa0, 0x16aa6, 0x056d0, 0x04ae0, 0x0a9d4, 0x0a2d0, 0x0d150, 0x0f252,
+                0x0d520
+            ];
+
+            const baseDate = new Date(1900, 0, 31);
+            const offset = Math.floor((date - baseDate) / 86400000);
+            
+            let md = offset;
+            let year = 0, month = 0, day = 0;
+            
+            for (let i = 1900; i < 2100 && md > 0; i++) {
+                const temp = 348 + (lunarInfo[i - 1900] & 0x0fffff);
+                md -= temp;
+                year++;
+            }
+            
+            if (md < 0) {
+                md += temp;
+                year--;
+            }
+            
+            const leapMonth = (lunarInfo[year - 1900] >> 12) & 0x0f;
+            let isLeap = false;
+            
+            for (let i = 1; i <= 12 && md > 0; i++) {
+                if (isLeap && i === leapMonth + 1) {
+                    const leapDay = (lunarInfo[year - 1900] >> 11) & 0x01;
+                    if (leapDay) {
+                        md -= 30;
+                        if (md <= 0) {
+                            md += 30;
+                            break;
+                        }
+                    }
+                    isLeap = false;
+                }
+                const days = (lunarInfo[year - 1900] >> (12 - i)) & 0x01 ? 30 : 29;
+                md -= days;
+                if (md <= 0) {
+                    md += days;
+                    month = i;
+                    break;
+                }
+                if (i === leapMonth) isLeap = true;
+            }
+            
+            day = md;
+            
+            return { year, month, day };
+        }
+
+        function getGreeting() {
+            const hour = new Date().getHours();
+            if (hour < 6) return '夜深了，早點休息';
+            if (hour < 9) return '早安，美好的一天開始了';
+            if (hour < 12) return '上午好，今天也要元氣滿滿';
+            if (hour < 14) return '中午好，記得吃午餐';
+            if (hour < 18) return '下午好，保持專注';
+            if (hour < 21) return '傍晚好，忙碌的一天辛苦了';
+            return '晚上好，好好放鬆一下';
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const weekday = weekdays[now.getDay()];
+
+            document.getElementById('date').textContent = `${year} / ${month} / ${day}`;
+            document.getElementById('hours').textContent = hours;
+            document.getElementById('minutes').textContent = minutes;
+            document.getElementById('seconds').textContent = seconds;
+            document.getElementById('weekday').textContent = weekday;
+            document.getElementById('greeting').textContent = getGreeting();
+
+            const lunar = getLunarDate(now);
+            document.getElementById('lunar').textContent = `農曆 ${lunarMonths[lunar.month - 1]}月${lunarDays[lunar.day - 1]}`;
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>
